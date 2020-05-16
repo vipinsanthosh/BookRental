@@ -10,5 +10,28 @@
 .center-1{
     text-align: center;
     font-weight: bold;
-    color: cornsilk;
+    color: brown;
+}
+
+.green{
+    color: green;
+}
+
+.whiteBackground{
+    background-color: white;
+}
+
+.whiteBox-1{
+    background-color:aquamarine;
+    width: 250px;
+    border: 5px solid white;
+    padding: 10px;
+    margin: auto;
+}
+
+.boldWeight{
+    font-weight: bold;
+}
+.red{
+    color: red;
 }

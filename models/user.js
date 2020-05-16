@@ -27,6 +27,10 @@ const userSchema = new Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    online: {
+        type: Boolean,
+        default: false
     }
 });
 

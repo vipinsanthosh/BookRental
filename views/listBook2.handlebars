@@ -1,0 +1,67 @@
+    <br>
+    <br>
+<div class="row">
+    <div class="col-sm"></div>
+
+    <div class="col-sm-4">
+        <form action="/listCar2" method="POST">
+            <div class="form-group">
+            <label for="pricePerWeek">Price per week</label>
+            <input type="number" name="pricePerWeek" id="pricePerWeek" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="pricePerMonth">Price per month</label>
+            <input type="number" name="pricePerMonth" id="pricePerMonth" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="location">location</label>
+            <input type="text" name="location" id="location" class="form-control" placeholder="street, city, state and zip-code">
+        </div>
+
+        <div class="form-group">
+            <button class="btn btn-info upload-btn" type="button">Choose image</button>
+            <input type="file" name="image" id="upload-input" style="display:none">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary centre">List the book!</button>
+        </div>
+
+        </form>
+    </div>
+    <div class="col-sm"></div>
+</div>
+<script>
+    //fetch location using javascript
+    function fetchLocation(){
+        var location = document.getElementById('location');
+        var Autocomplete = new google.maps.places.Autocomplete(location);
+    }
+    //jquery code starts here
+    $(document).ready(function(){
+        $('.upload-btn').on('click',function(){
+            $('#upload-input').click();
+        });
+        $('#upload-input').on('change',function(){
+            var uploadInput = $('#upload-input');
+            if(uploadInput.val() != ''){
+                var formData = new FormData();
+                formData.append('image',uploadInput[0].files[0]);
+
+                //make ajax request to send image to database
+                $.ajax({
+                    url: '/uploadImage',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(){
+                        uploadInput.val('');
+                    }
+                })
+            }
+        })
+    })
+</script>
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_IkcXKFgm_8Lw0QSRJblZxiNjDYfpxqc&libraries=places&callback=fetchLocation"></script>
