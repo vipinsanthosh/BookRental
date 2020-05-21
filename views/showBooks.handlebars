@@ -1,5 +1,6 @@
 {{#each books}}
 <br>
+<a href="/displayBook/{{_id}}">
 <div class="media">
   <input type="hidden" id="bookID" value="{{_id}}">
   <img src="{{owner.image}}" class="mr-3" width="64px" height="64px">
@@ -22,6 +23,7 @@
     <br>
   </div>
 </div>
+</a>
 <hr>
 {{else}}
 <p>No book listed!</p>

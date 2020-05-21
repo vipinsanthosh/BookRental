@@ -1,0 +1,54 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card" style="width: 18rem;">
+                <img src="{{book.picture}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{book.title}}</h5>
+                    <p class="card-text">Author: {{book.author}}, Edition: {{book.edition}} </p>
+                    <p class="card-text">Rs.{{book.pricePerWeek}} per week</p>
+                    <p class="card-text">Rs.{{book.pricePerMonth}} per month</p>
+
+                    <a href="/showOwner/{{book.owner}}" class="btn btn-primary">Contact Owner</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-4">
+            <form action="/calculateTotal/{{book._id}}" method="POST">
+            <div class="form-group">
+                <br>
+                <label for="week">How long do you want to rent?</label>
+                <br>
+                
+                <select name="month" class="form-control">
+                    <option value="0">0 month</option>
+                    <option value="1">1 month</option>
+                    <option value="2">2 months</option>
+                    <option value="3">3 months</option>
+                    <option value="4">4 months</option>
+                    <option value="5">5 months</option>
+                    <option value="6">6 months</option>
+                    <option value="7">7 months</option>
+                    <option value="8">8 months</option>
+                    <option value="9">9 months</option>
+                    <option value="10">10 months</option>
+                    <option value="11">11 months</option>
+                    <option value="12">12 months</option>
+                </select>
+
+                <select name="week" class="form-control">
+                    <option value="1">0 wk</option>
+                    <option value="1">1 wk</option>
+                    <option value="2">2 wks</option>
+                    <option value="3">3 wks</option>
+                </select>
+
+                <div class="form-group">
+                    <button type="submit" class="form-control btn btn-danger btn-2">Calculate Total</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>

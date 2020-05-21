@@ -1,4 +1,6 @@
 $(document).ready(function(){
+    // autoscroll function by jQuery
+    $('#list').animate({scrollTop:10000},80);
     var socket = io();
     // connect client to server
     socket.on('connect',function(socket){

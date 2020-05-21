@@ -2,9 +2,26 @@
 <div class="container">
     <h4>Chat with {{owner.firstname}}</h4>
     <ul id="list">
+        {{#each chat}}
+        {{#each dialogue}}
+        <p><b>{{sender.firstname}}</b></p>
+        <h3>{{senderMessage}} </h3>
+        <small>{{date}}</small>
+        <hr>
+        {{#if receiverMessage}}
+        <p><b>{{receiver.firstname}}</b> </p>
+        <h3>{{receiverMessage}} </h3>
+        <small>{{date}} </small>
+        {{else}}
+        {{/if}}
+        <hr>
+        {{/each}}
+        {{else}}
+        <p>Start talking..</p>
+        {{/each}}
     </ul>
-    <form>
-        <input type="text" id="message" class="form-control">
-        <button type="button" class="btn btn-primary btn-1">Send</button>
+    <form action="/chat/{{chat._id}}" method="POST">
+        <input type="text" name="message" class="form-control">
+        <button type="submit" class="btn btn-primary btn-1">Send</button>
     </form>
 </div>

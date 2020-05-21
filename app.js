@@ -306,6 +306,15 @@ app.get('/showOwner/:id',(req,res) =>{
         })
     }).catch((err) =>{console.log(err)});
 })
+//renting a book
+app.get('/RentBook/:id',(req,res) =>{
+    Book.findOne({_id:req.params.id})
+    .then((book) => {
+        res.render('calculate',{
+            book:book
+        })
+    }).catch((err) =>{console.log(err)});
+})
 //socket connection
 const server = http.createServer(app);
 const io = socketIO(server);
@@ -330,7 +339,7 @@ io.on('connection',(socket)=>{
                    if(chat){
                        chat.senderRead = true;
                        chat.receiverRead = false;
-                       chat.date = new Data()
+                       chat.date = new Date()
                        chat.save()
                        .then((chat)=>{
                            res.redirect(`/chat/${chat._id}`);
@@ -349,9 +358,53 @@ io.on('connection',(socket)=>{
            }
        }).catch((err) =>{console.log(err)}); 
     });
+    //Hnadle /chat/chat ID route
+    app.get('/chat/:id',(req,res)=>{
+        Chat.findOne({_id:req.params.id})
+        .populate('sender')
+        .populate('receiver')
+        .populate('dialogue.sender')
+        .populate('dialogue.receiver')
+        .then((chat) =>{
+            res.render('chatRoom',{
+                chat:chat
+            })
+        }).catch((err) => {console.log(err)});
+    })
+    //Post request to /chat/ID
+    app.post('/chat/:id', (req,res)=>{
+        Chat.findById({_id:req.params.id})
+        .populate('sender')
+        .populate('receiver')
+        .populate('dialogue.sender')
+        .populate('dialogue.receiver')
+        .then((chat)=>{
+            const newDialogue = {
+                sender: req.user._id,
+                date: new Date(),
+                senderMessage: req.body.message
+            }
+            chat.dialogue.push(newDialogue)
+            chat.save((err,chat)=>{
+                if(err){
+                    console.log(err);
+                }
+                if(chat) {
+                    Chat.findOne({_id:chat._id})
+                    .populate('sender')
+                    .populate('receiver')
+                    .populate('dialogue.sender')
+                    .populate('dialogue.receiver')
+                    .then((chat) =>{
+                        res.render('chatRoom',{chat:chat});
+                    }).catch((err)=>{console.log(err)});
+                }
+            })
+        }).catch((err)=>{console.log(err)});
+    })
     //listen to ObjectID
     socket.on('ObjectID',(oneBook) => {
-        console.log('One Car is ', oneBook);
+        console.log('One Book is ', oneBook);
         Book.findOne({
             owner:oneBook.userID,
             _id:oneBook.bookID
