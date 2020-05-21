@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+       /* Set the size of the div element that contains the map */
+      #map {
+        height: 400px;  /* The height is 400 pixels */
+        width: 100%;  /* The width is the width of the web page */
+       }
+    </style>
+  </head>
+  <body>
+    <h3>Find books on the map!</h3>
+    <!--The div element for the map -->
+    <div id="map"></div>
+    <script>
+      $(document).ready(
+        // Initialize and add the map
+        function initMap(){
+        // The location of Uluru
+        var KT = {lat: 11.3182, lng: 75.9376};
+        // The map, centered at Uluru
+        var map = new google.maps.Map(
+        document.getElementById('map'), {zoom: 8, center: KT});
+        //load socket
+        var socket = io();
+        //listen to allbooks event to receive all books
+        socket.on('allbooks', function(books) {
+          console.log('AllBooks', books);
+          //loop through books array
+          for(var i = 0 ; i<30;i++){
+            console.log(books.books[i]);
+            // The marker function
+            function addMarker(){
+              var marker = new google.maps.Marker({
+                position: {
+                    lat:books.books[i].coords.lat,
+                    lng: books.books[i].coords.lng
+                  }, 
+                  map: map
+              });
+              //create info window for each car
+              var infoWindow = new google.maps.InfoWindow({
+                content: `<a href="/displayBook/${books.books[i]._id}">
+                <h6>${books.books[i].title}</h6>
+                <p><b>Author - </b>${books.books[i].author}<br>
+                <b>Type - </b>${books.books[i].type}</p>
+                <img src="${books.books[i].picture}" width="70px">
+                </a>`
+              });
+              marker.addListener('click',function(){
+                infoWindow.open(map,marker);
+              })
+            }
+            addMarker();
+          }
+        });
+      })
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDTdB_IpQJkVlWaIo6QCZxY9RgUhOxK52k&callback=initMap">
+    </script>
+  </body>
+</html>

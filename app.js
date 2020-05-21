@@ -10,6 +10,8 @@ const bcryt = require('bcryptjs');
 const Handlebars = require('handlebars');
 const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access');
 const formidable = require('formidable');
+const socketIO = require('socket.io');
+const http = require('http');
 //init app
 const app = express();
 //setup body parser middleware
@@ -26,6 +28,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 //load helpers
 const {requireLogin,ensureGuest} = require('./helpers/authHelper');
+const {upload} = require('./helpers/aws');
+
 //load passports
 require('./passport/local');
 require('./passport/facebook');
@@ -39,6 +43,8 @@ const keys = require('./config/keys');
 //load connection
 const User = require('./models/user');
 const Contact = require('./models/contact');
+const Book = require('./models/book');
+const Chat = require('./models/chat');
 //connect to MongoDB
 mongoose.connect(keys.MongoDB, {
     useNewUrlParser: true,
@@ -196,13 +202,61 @@ app.get('/listBook',requireLogin,(req,res)=>{
     })
 });
 app.post('/listBook',requireLogin,(req,res)=>{
-    console.log(req.body);
-    res.render('listBook2',{
-        title:'Finish'
-    });
+    const newBook = {
+        owner: req.user._id,
+        title: req.body.title,
+        author: req.body.author,
+        edition: req.body.edition,
+        type: req.body.type
+    }
+    new Book(newBook).save((err,book)=> {
+        if(err) {
+            throw err;
+        }
+        if(book){
+            res.render('listBook2',{
+                title:'Finish',
+                book:book
+            });
+        }
+    })
+    
+});
+
+app.post('/listBook2',requireLogin,(req,res)=>{
+    Book.findOne({_id:req.body.bookID,owner:req.user._id})
+    .then((book) =>{
+        let imageUrl = {
+            imageUrl: `https://book-rental-project.s3.ap-south-1.amazonaws.com/${req.body.image}`
+        };
+        book.pricePerWeek = req.body.pricePerWeek;
+        book.pricePerMonth = req.body.pricePerMonth;
+        book.location = req.body.location;
+        book.picture = `https://book-rental-project.s3.ap-south-1.amazonaws.com/${req.body.image}`;
+        book.image.push(imageUrl); 
+        book.save((err,book)=> {
+            if(err){
+                throw err;
+            }
+            if (book){
+                res.redirect('/showBooks');
+            }
+        })
+    })
+});
+
+app.get('/showBooks',requireLogin,(req,res)=>{
+    Book.find({})
+    .populate('owner')
+    .sort({date:'desc'})
+    .then((books)=> {
+        res.render('showBooks',{
+            books:books
+        })
+    })
 });
 //receive image
-app.post('/uploadImage',(req,res) =>{
+app.post('/uploadImage',requireLogin,upload.any(),(req,res) =>{
     const form = new formidable.IncomingForm();
     form.on('file',(feild,file)=>{
         console.log(file);
@@ -231,6 +285,112 @@ app.get('/logout',(req,res)=>{
         });
     });
 });
-app.listen(port,() => {
+//maps route
+app.get('/openGoogleMap',(req,res) =>{
+    res.render('googlemap');
+});
+//display info of one book
+app.get('/displayBook/:id',(req,res)=>{
+    Book.findOne({_id:req.params.id}).then((book) =>{
+        res.render('displayBook',{
+            book:book
+        });
+    }).catch((err) =>{console.log(err)});
+})
+//open owner profile page
+app.get('/showOwner/:id',(req,res) =>{
+    User.findOne({_id:req.params.id})
+    .then((owner)=> {
+        res.render('ownerProfile',{
+            owner:owner
+        })
+    }).catch((err) =>{console.log(err)});
+})
+//socket connection
+const server = http.createServer(app);
+const io = socketIO(server);
+
+io.on('connection',(socket)=>{
+    console.log('Connected to Client');
+    //handle chat room route
+    app.get('/chatOwner/:id',(req,res)=>{
+       Chat.findOne({sender: req.params.id,receiver:req.user._id})
+       .then((chat)=>{
+           if(chat){
+               chat.date = new Date(),
+               chat.senderRead = false;
+               chat.receiverRead = true;
+               chat.save()
+               .then((chat)=>{
+                   res.redirect(`/chat/${chat._id}`);
+               }).catch((err)=>{console.log(err)});
+           }else{
+               Chat.findOne({sender:req.user._id,receiver:req.params.id})
+               .then((chat)=>{
+                   if(chat){
+                       chat.senderRead = true;
+                       chat.receiverRead = false;
+                       chat.date = new Data()
+                       chat.save()
+                       .then((chat)=>{
+                           res.redirect(`/chat/${chat._id}`);
+                       }).catch((err) => {console.log(err)});
+                   }else{
+                       const newChat = {
+                           sender: req.user._id,
+                           receiver: req.params.id,
+                           date: new Date()
+                       }
+                       new Chat(newChat).save().then((chat) =>{
+                           res.redirect(`/chat/${chat._id}`);
+                       }).catch((err)=>{console.log(err)});
+                   }
+               }).catch((err) => {console.log(err)});
+           }
+       }).catch((err) =>{console.log(err)}); 
+    });
+    //listen to ObjectID
+    socket.on('ObjectID',(oneBook) => {
+        console.log('One Car is ', oneBook);
+        Book.findOne({
+            owner:oneBook.userID,
+            _id:oneBook.bookID
+        })
+        .then((book) =>{
+            socket.emit('book',book);
+        }).catch();
+    });
+    //Find books and send them to browser to maps
+    Book.find({}).then((books) =>{
+        socket.emit('allbooks',{books:books});
+    }).catch((err)=>{
+        console.log(err);
+    });
+    //listen to event to receive lat and lng
+    socket.on('LatLng',(data)=>{
+        console.log(data);
+        //find a book object and update the lat and lng
+        Book.findOne({owner:data.book.owner})
+        .then((book)=>{
+            book.coords.lat = data.data.results[0].geometry.location.lat;
+            book.coords.lng = data.data.results[0].geometry.location.lng;
+            book.save((err,book) =>{
+                if(err) {
+                    throw err;
+                }
+                if(book){
+                    console.log('Book lat and lng is updated!')
+                }
+            })
+        }).catch((err)=>{
+            console.log(err);
+        });
+    });
+    //listen to disconnection
+    socket.on('disconnect',(socket)=>{
+        console.log('Disconnected from Client');
+    });
+});
+server.listen(port,() => {
     console.log(`Server running on port ${port}`);
 });

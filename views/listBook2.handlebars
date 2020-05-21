@@ -4,24 +4,25 @@
     <div class="col-sm"></div>
 
     <div class="col-sm-4">
-        <form action="/listCar2" method="POST">
-            <div class="form-group">
+        <form action="/listBook2" method="POST">
+            <input type="hidden" name="bookID" value="{{book._id}}">
+        <div class="form-group">
             <label for="pricePerWeek">Price per week</label>
-            <input type="number" name="pricePerWeek" id="pricePerWeek" class="form-control">
+            <input type="number" name="pricePerWeek" id="pricePerWeek" class="form-control" required>
         </div>
         <div class="form-group">
             <label for="pricePerMonth">Price per month</label>
-            <input type="number" name="pricePerMonth" id="pricePerMonth" class="form-control">
+            <input type="number" name="pricePerMonth" id="pricePerMonth" class="form-control" required>
         </div>
 
         <div class="form-group">
             <label for="location">location</label>
-            <input type="text" name="location" id="location" class="form-control" placeholder="street, city, state and zip-code">
+            <input type="text" name="location" id="location" class="form-control" placeholder="street, city, state and zip-code" required>
         </div>
 
         <div class="form-group">
             <button class="btn btn-info upload-btn" type="button">Choose image</button>
-            <input type="file" name="image" id="upload-input" style="display:none">
+            <input type="file" name="image" id="upload-input" style="display:none" required>
         </div>
         <div class="form-group">
             <button type="submit" class="btn btn-primary centre">List the book!</button>

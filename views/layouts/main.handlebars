@@ -17,7 +17,10 @@
     {{> navbar}}
     <div class="container">
         {{{body}}}
+        <input type="hidden" id="ObjectID" value="{{user._id}}">
     </div>
     <script src="http://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>

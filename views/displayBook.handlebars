@@ -1,0 +1,33 @@
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card" style="width: 18rem;">
+                <img src="{{book.picture}}" class="card-img-top" alt="...">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card-body">
+                <h5 class="card-title">{{book.title}}</h5>
+                <p class="card-text">Author: {{book.author}}, Edition: {{book.edition}} </p>
+                <p class="card-text">Rs.{{book.pricePerWeek}} per week</p>
+                <p class="card-text">Rs.{{book.pricePerMonth}} per month</p>
+                <small>Address: {{book.location}}</small>
+                <br>
+                <br>
+                <a href="/showOwner/{{book.owner}}"><button class="btn btn-info btn-1">Contact Owner</button></a>
+                <a href="/checkout"><button class="btn btn-success btn-1">Add to Cart</button></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+

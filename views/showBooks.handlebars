@@ -1,0 +1,28 @@
+{{#each books}}
+<br>
+<div class="media">
+  <input type="hidden" id="bookID" value="{{_id}}">
+  <img src="{{owner.image}}" class="mr-3" width="64px" height="64px">
+  <div class="media-body">
+    <h5 class="mt-0">{{title}} by {{author}}, Edition: {{edition}}</h5>
+    <div class="row">
+        {{#each image}}
+        <div class="col-sm">
+            <img src="{{imageUrl}}" class="img-fluid" width="300px" height="auto">
+        </div>
+        {{else}}
+            <img src="/image/logo.jpg">
+        {{/each}}
+    </div>
+    <p>Rs.{{pricePerWeek}} per Week</p>
+    <p>Rs.{{pricePerMonth}} per Month</p>
+    <small>{{location}}</small>
+    <br>
+    <small>{{date}}</small>
+    <br>
+  </div>
+</div>
+<hr>
+{{else}}
+<p>No book listed!</p>
+{{/each}}

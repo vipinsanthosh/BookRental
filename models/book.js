@@ -24,26 +24,32 @@ const bookSchema = new Schema({
     pricePerMonth: {
         type: Number
     },
-    location: [{
-        address: {
+    
+    image: [{
+        imageUrl: {
             type: String
-        },
-        city: {
-            type: String
-        },
-        state: {
-            type: String
-        },
+        }
+    }],
+
+    location: {
+        type: String
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
+    coords: {
         lat: {
             type: Number
         },
         lng: {
             type: Number
         }
-    }],
-    date: {
-        type: Date,
-        default: Date.now
+        
+    },
+    picture: {
+        type: String
     }
+
 });
-module.exports =mongoose.model('Book',bookSchema);
+module.exports = mongoose.model('Book',bookSchema);
