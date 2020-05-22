@@ -40,11 +40,14 @@ app.use((req,res,next) =>{
 });
 //load Files
 const keys = require('./config/keys');
+//load Stripe
+const stripe = require('stripe')(keys.StripeSecretKey);
 //load connection
 const User = require('./models/user');
 const Contact = require('./models/contact');
 const Book = require('./models/book');
 const Chat = require('./models/chat');
+const Budget = require('./models/budget');
 //connect to MongoDB
 mongoose.connect(keys.MongoDB, {
     useNewUrlParser: true,
@@ -315,10 +318,82 @@ app.get('/RentBook/:id',(req,res) =>{
         })
     }).catch((err) =>{console.log(err)});
 })
+//calculate total POST request
+app.post('/calculateTotal/:id',(req,res)=>{
+    Book.findOne({_id:req.params.id})
+    .then((book)=> {
+        console.log(req.body);
+        var week = parseInt(req.body.week);
+        var month = parseInt(req.body.month);
+        //console.log('type of week is', typeof(week));
+        var totalWeek = week * book.pricePerWeek;
+        var totalMonth = month * book.pricePerMonth;
+        var total = totalMonth + totalWeek;
+        console.log('Total is : ', total);
+        //create a budget
+        const budget = {
+            bookID: req.params.id,
+            total: total,
+            renter: req.user._id,
+            date: new Date()
+        }
+        new Budget(budget).save((err,budget) =>{
+            if(err){
+                console.log(err);
+            }
+            if(budget) {
+                Book.findOne({_id:req.params.id})
+                .then((book)=> {
+                    //calculate total for stripe
+                    var stripeTotal = budget.total * 100 *0.013;
+                    res.render("checkout",{
+                        budget :budget,
+                        book: book,
+                        StripePublishableKey: keys.StripePublishableKey,
+                        stripeTotal: stripeTotal
+                    })
+                    
+                }).catch((err)=>{console.log(err)});
+            }
+        })
+    })
+})
+//Charge client
+app.post('/chargeRenter/:id',(req,res)=>{
+    Budget.findOne({_id:req.params.id})
+    .populate('renter')
+    .then((budget) =>{
+        const amount = budget.total *100;
+        stripe.customers.create({
+            email: req.body.stripeEmail,
+            source: req.body.stripeToken
+        })
+        .then((customer)=>{
+            stripe.charges.create({
+                amount:amount,
+                description: `Rs.${budget.total} for renting the book.`,
+                currency: 'inr',
+                customer: customer.id,
+                receipt_email: customer.email
+            },(err,charge)=>{
+                if(err) {
+                    console.log(err);
+                }
+                if(charge){
+                    console.log(charge);
+                    res.render('success',{
+                        charge: charge,
+                        budget: budget
+                    })
+                }
+            })
+        }).catch((err)=>{console.log(err)});
+    }).catch((err)=>{console.log(err)});
+})
 //socket connection
 const server = http.createServer(app);
 const io = socketIO(server);
-
+//connect to client
 io.on('connection',(socket)=>{
     console.log('Connected to Client');
     //handle chat room route

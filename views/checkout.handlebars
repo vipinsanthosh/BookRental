@@ -1,0 +1,35 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card" style="width: 18rem;">
+                <img src="{{book.picture}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{book.title}}</h5>
+                    <p class="card-text">Author: {{book.author}}, Edition: {{book.edition}} </p>
+                    <p class="card-text">Rs.{{book.pricePerWeek}} per week</p>
+                    <p class="card-text">Rs.{{book.pricePerMonth}} per month</p>
+
+                    <a href="/showOwner/{{book.owner}}" class="btn btn-primary">Contact Owner</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-sm-4">
+            <form action="/chargeRenter/{{budget._id}}" method="POST">
+            <br>
+            <script src="https://checkout.stripe.com/checkout.js" 
+            data-key="{{StripePublishableKey}}" class="stripe-button"
+            data-amount="{{stripeTotal}}"
+            data-name="Book Rental" data-description="Rs.{{budget.total}} for renting {{book.title}}" 
+            data-image="/image/logo.png"></script>
+            <div class="form-group">
+                <br>
+                <label for="total">Total : Rs.{{budget.total}}</label>
+                <br>
+                <div class="form-group">
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>

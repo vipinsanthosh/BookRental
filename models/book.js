@@ -49,7 +49,9 @@ const bookSchema = new Schema({
     },
     picture: {
         type: String
+    },
+    wallet: {
+        type: Number
     }
-
 });
 module.exports = mongoose.model('Book',bookSchema);
